@@ -83,11 +83,28 @@ public class ElasticDbDataController {
         return new ResponseEntity<>(response.getResult(), HttpStatus.OK);
     }
 
+    @GetMapping(path = "/deleteAllData")
+    public ResponseEntity<String> deleteAllData() throws IOException {
+        logger.info("START : ElasticDbDataController.deleteData()");
+        service.deleteAllData();
+        logger.info("All the Data was deleted");
+        return new ResponseEntity<>("All the Data was deleted", HttpStatus.OK);
+    }
+
     @GetMapping(path = "/getAllIds")
     public ResponseEntity<List<String>> getAllIds() throws IOException {
         logger.info("START : ElasticDbDataController.getAllIds()");
         List<String> response = service.getAllIds();
         logger.info("Data was : "+response);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping(path = "/sortData")
+    public ResponseEntity<List<Person>> sortData(@RequestParam(required = true) String field,
+                                                 @RequestParam(required = false) String sortOrder) throws IOException {
+        logger.info("START : ElasticDbDataController.sortData()");
+        List<Person> response = service.sortData(field,sortOrder);
+        logger.info("List size : "+response.size());
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

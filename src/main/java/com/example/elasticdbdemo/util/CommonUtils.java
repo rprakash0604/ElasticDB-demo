@@ -13,12 +13,16 @@ public class CommonUtils {
         XContentBuilder builder = XContentFactory.jsonBuilder()
                 .startObject()
                 .field("fullName", name)
-                .field("dateOfBirth", dob)
-                .field("age", age)
+                .field("dob", dob.getTime())
+                .field("age",age)
                 .endObject();
 
         IndexRequest indexRequest = new IndexRequest("people");
         indexRequest.source(builder);
         return indexRequest;
+    }
+
+    public static Date converyLongtoDate(Long longDate){
+        return new Date(longDate);
     }
 }

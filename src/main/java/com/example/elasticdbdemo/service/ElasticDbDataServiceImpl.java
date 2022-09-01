@@ -15,7 +15,13 @@ import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.sort.FieldSortBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,6 +73,7 @@ public class ElasticDbDataServiceImpl {
                         .map(hit -> {
                             Person person = JSON.parseObject(hit.getSourceAsString(), Person.class);
                             person.setId(hit.getId());
+                            person.setDateOfBirth(CommonUtils.converyLongtoDate(person.getDob()));
                             return person;
                         })
                         .collect(Collectors.toList());
@@ -80,6 +87,19 @@ public class ElasticDbDataServiceImpl {
         deleteRequest.id(id);
         DeleteResponse deleteResponse = restHighLevelClient.delete(deleteRequest, RequestOptions.DEFAULT);
         return deleteResponse;
+    }
+
+    public void deleteAllData() throws IOException {
+        logger.info("START : ElasticDbDataServiceImpl.deleteAllData()");
+        getAllIds().forEach(id ->{
+            DeleteRequest deleteRequest = new DeleteRequest("people");
+            deleteRequest.id(id);
+            try {
+                restHighLevelClient.delete(deleteRequest, RequestOptions.DEFAULT);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     public UpdateResponse updateData(String id,String name,String age,Date dob) throws IOException {
@@ -101,6 +121,39 @@ public class ElasticDbDataServiceImpl {
                         .collect(Collectors.toList());
 
         return results;
+    }
+
+    public List<Person> sortData(String fieldName, String sortOrder) throws IOException {
+        SearchRequest searchRequest = new SearchRequest();
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+
+        String sortFieldName = fieldName;
+        if("age".equalsIgnoreCase(fieldName)) sortFieldName = fieldName + ".keyword";
+        FieldSortBuilder fieldSortBuilder = SortBuilders.fieldSort(sortFieldName);
+
+        SortOrder order = SortOrder.DESC;
+        if("DESC".equalsIgnoreCase(sortOrder)) order = SortOrder.DESC;
+        if("ASC".equalsIgnoreCase(sortOrder)) order = SortOrder.ASC;
+        fieldSortBuilder.order(order);
+
+        searchSourceBuilder.sort(fieldSortBuilder);
+        searchRequest.source(searchSourceBuilder);
+        SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+
+        SearchHit[] searchHits = searchResponse.getHits().getHits();
+        List<Person> results =
+                Arrays.stream(searchHits)
+                        .map(hit -> {
+                            Person person = JSON.parseObject(hit.getSourceAsString(), Person.class);
+                            person.setId(hit.getId());
+                            person.setDateOfBirth(CommonUtils.converyLongtoDate(person.getDob()));
+                            return person;
+                        })
+                        .collect(Collectors.toList());
+
+        return results;
+
     }
 
 }
