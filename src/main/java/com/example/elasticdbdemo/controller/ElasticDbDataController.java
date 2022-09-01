@@ -1,6 +1,7 @@
 package com.example.elasticdbdemo.controller;
 
 import com.example.elasticdbdemo.model.Person;
+import com.example.elasticdbdemo.service.ElasticDbDataService;
 import com.example.elasticdbdemo.service.ElasticDbDataServiceImpl;
 import org.elasticsearch.action.DocWriteResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
@@ -28,7 +29,7 @@ public class ElasticDbDataController {
     private final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Autowired
-    ElasticDbDataServiceImpl service;
+    ElasticDbDataService service;
 
     @GetMapping(path = "/insertDefaultData")
     public ResponseEntity<DocWriteResponse.Result> insertDefaultData() throws IOException {

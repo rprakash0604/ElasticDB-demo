@@ -1,6 +1,5 @@
 package com.example.elasticdbdemo.service;
 
-import com.alibaba.fastjson.JSON;
 import com.example.elasticdbdemo.model.Person;
 import com.example.elasticdbdemo.util.CommonUtils;
 import org.elasticsearch.action.delete.DeleteRequest;
@@ -15,7 +14,6 @@ import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -34,7 +32,7 @@ import java.util.stream.Collectors;
 
 
 @Service
-public class ElasticDbDataServiceImpl {
+public class ElasticDbDataServiceImpl implements ElasticDbDataService{
 
     private final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -68,17 +66,7 @@ public class ElasticDbDataServiceImpl {
         logger.info("START: ElasticDbDataServiceImpl.fetchData()");
         SearchResponse response = restHighLevelClient.search(new SearchRequest(), RequestOptions.DEFAULT);
         SearchHit[] searchHits = response.getHits().getHits();
-        List<Person> results =
-                Arrays.stream(searchHits)
-                        .map(hit -> {
-                            Person person = JSON.parseObject(hit.getSourceAsString(), Person.class);
-                            person.setId(hit.getId());
-                            person.setDateOfBirth(CommonUtils.converyLongtoDate(person.getDob()));
-                            return person;
-                        })
-                        .collect(Collectors.toList());
-
-        return results;
+        return CommonUtils.parseJsonObjectToPersonObject(searchHits);
     }
 
     public DeleteResponse deleteData(String id) throws IOException {
@@ -124,6 +112,7 @@ public class ElasticDbDataServiceImpl {
     }
 
     public List<Person> sortData(String fieldName, String sortOrder) throws IOException {
+        logger.info("START : ElasticDbDataServiceImpl.sortData()");
         SearchRequest searchRequest = new SearchRequest();
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.matchAllQuery());
@@ -142,18 +131,8 @@ public class ElasticDbDataServiceImpl {
         SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
 
         SearchHit[] searchHits = searchResponse.getHits().getHits();
-        List<Person> results =
-                Arrays.stream(searchHits)
-                        .map(hit -> {
-                            Person person = JSON.parseObject(hit.getSourceAsString(), Person.class);
-                            person.setId(hit.getId());
-                            person.setDateOfBirth(CommonUtils.converyLongtoDate(person.getDob()));
-                            return person;
-                        })
-                        .collect(Collectors.toList());
 
-        return results;
-
+        return CommonUtils.parseJsonObjectToPersonObject(searchHits);
     }
 
 }
