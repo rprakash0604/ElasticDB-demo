@@ -19,3 +19,4 @@ Below are rest endpoint implemented :
 4) Fetch Data by ID: http://localhost:8081/fetchDataById?id=toQV6oIB1TjgA1ozo53I
 5) Update Data: http://localhost:8081/updateData?id=s4RP3IIB1TjgA1ozLJ0K&name=Demo&age=34&dob=04-07-2001
 6) Delete Data: http://localhost:8081/deleteData?id=tIRe3YIB1TjgA1oz2J14
+7) Sort Data: http://localhost:8081/sortData?field=dob&sortOrder=DESC
